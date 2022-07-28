@@ -6,7 +6,7 @@
 
 <script>
 export default {
-    neme:"Singer"
+    neme:"singer"
 }
 </script>
 

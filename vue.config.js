@@ -18,7 +18,7 @@ module.exports = defineConfig({
   // 配置跨域代理
   devServer:{
     onBeforeSetupMiddleware(app){
-      registerRouter(app)
+      registerRouter(app.app)
     }
   }
 })

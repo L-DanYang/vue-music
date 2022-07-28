@@ -6,7 +6,7 @@
 
 <script>
 export default {
-    neme:"Search"
+    neme:"search"
 }
 </script>
 

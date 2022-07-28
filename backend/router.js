@@ -105,6 +105,7 @@ function mergeSinger(singer) {
 
 // 注册后端路由
 function registerRouter(app) {
+  console.log(app)
   registerRecommend(app)
 
   registerSingerList(app)

@@ -6,7 +6,7 @@
 
 <script>
 export default {
-    neme:"Toplist"
+    neme:"toplist"
 }
 </script>
 
