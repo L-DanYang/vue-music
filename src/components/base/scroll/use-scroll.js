@@ -7,7 +7,7 @@ import { onMounted,onUnmounted ,ref} from "vue";
 BScroll.use(ObserveDOM)//注册
 BScroll.use(ObserveImage)
 
-export default function useScroll(wrapperRef,options){//扩展一个options参数
+export default function useScroll(wrapperRef,options,emit){//扩展一个options参数
     const scroll = ref(null)
 
     onMounted(()=>{
@@ -22,6 +22,13 @@ export default function useScroll(wrapperRef,options){//扩展一个options参�
             scrollY:true,
             ...options //扩展运算符添加options
         })
+
+        if(options.probeType>0){//如果probetype大于0 就去监听他的scroll事件
+            scroll.value.on('scroll',(pos)=>{
+                // 定义一个自定义事件
+                emit('scroll',pos)
+            })
+        }
     })
 
     onUnmounted(()=>{

@@ -56,7 +56,6 @@ export default {
         const result = await getRecommend()//获取轮播图和列表数据的方法
         this.sliders = result.sliders
         this.albums = result.albums
-        console.log(this.albums)
     }
 }
 </script>

@@ -14,14 +14,20 @@ export default {
         click:{//想把click传递给初始化scroll的options，可以给useScroll添加一个参数
             type:Boolean,
             default:true
+        },
+        probeType:{
+            type:Number,
+            default:0
         }
     },
-    setup(props){//外部使用的时候，把props传递过去就行
+    emits:['scroll'],
+    setup(props,{emit}){//外部使用的时候，把props传递过去就行
         const rootRef = ref(null)
-        useScroll(rootRef,props)//setup带了props，里面的useScroll就可以拿到props
+        const scroll=useScroll(rootRef,props,emit)//setup带了props，里面的useScroll就可以拿到props
 
         return {
-            rootRef
+            rootRef,
+            scroll
         }
     }
 }
