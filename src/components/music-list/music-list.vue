@@ -7,7 +7,7 @@
     <h1 class="title">{{title}}</h1>
     <div class="bg-image" :style="bgImageStyle" ref="bgImage">
         <div class="play-btn-wrapper" :style="playbtnStyle">
-            <div class="play-btn">
+            <div class="play-btn" @click="random">
                 <i class="icon-play"></i>
                 <span class="text">随机播放全部</span>
             </div>
@@ -17,7 +17,7 @@
     <!-- list -->
     <scroll class="list"  :style="scrollStyle" v-loading="loading" v-no-result="noResult" :probeType="3" @scroll="onScroll">
         <div class="song-list-wrapper">
-            <song-list :songs="songs"></song-list>
+            <song-list :songs="songs" @select="selectItem"></song-list>
         </div>
     </scroll>
 </div>
@@ -26,6 +26,7 @@
 <script>
 import SongList from '@/components/base/song-list/song-list'
 import Scroll from  '@/components/base/scroll/scroll.vue'
+import { mapActions } from 'vuex'
 
 const RESERVED_HEIGHT = 40//为滚动预留的距离
 
@@ -128,7 +129,20 @@ export default {
         },
         onScroll(pos){
             this.scrollY = -pos.y
-        }
+        },
+        random(){//随机播放
+            this.randomPlay(this.songs)
+        },
+        selectItem({song,index}){
+            this.selectPlay({
+                list:this.songs,
+                index
+            })
+        },
+        ...mapActions([
+            'selectPlay',
+            'randomPlay'
+        ])
     }
 }
 </script>
