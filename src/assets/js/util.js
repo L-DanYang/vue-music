@@ -17,3 +17,10 @@ function swap(arr,i,j){//交换arr[i]和arr[j]
     arr[i]=arr[j]
     arr[j]=t
 }
+
+export function formatTime(interval){//做一个事件的格式化
+    interval = interval | 0//先向下取整
+    const minute = ((interval/60 | 0)+'').padStart(2,'0')//分钟部分,变成字符串，然后不足两位补0
+    const second = (interval%60 + '').padStart(2,'0')//秒部分
+    return `${minute}:${second}`
+}
