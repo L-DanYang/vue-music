@@ -17,9 +17,13 @@
       <!-- 中间部分 -->
       <div
           class="middle"
-        >
+          @touchstart.prevent = "onMiddleTouchStart"
+          @touchmove.prevent = "onMiddleTouchMove"
+          @touchend.prevent = "onMiddleTouchEnd"
+      >
           <div
             class="middle-l"
+            :style="middleLStyle"
           >
             <div
               class="cd-wrapper"
@@ -35,10 +39,15 @@
                   :src="currentSong.pic">
               </div>
             </div>
+            <!-- 当前播放的歌词 -->
+            <div class="playing-lyric-wrapper">
+              <div class="playing-lyric">{{playingLyric}}</div>
+            </div>
           </div>
           <!-- scroll -->
           <scroll 
             class="middle-r"
+            :style="middleRStyle"
             ref="lyricScrollRef"
           >
             <div class="lyric-wrapper">
@@ -50,15 +59,20 @@
                   v-for="(line,index) in currentLyric.lines"
                   :key="line.num">{{line.txt}}</p>
               </div>
-              
-              <div class="pure-music">
+              <!-- 纯音乐没有歌词 -->
+              <div class="pure-music" v-show="pureMusicLyric">
                 <p>{{pureMusicLyric}}</p>
               </div>
             </div>
           </scroll>
-        </div>  
+       </div>  
         <!-- 底部 -->
         <div class="bottom">
+          <!-- 左右层的切换小点 -->
+            <div class="dot-wrapper">
+              <span class="dot" :class="{'active':currentShow==='cd'}"></span>
+              <span class="dot" :class="{'active':currentShow==='lyric'}"></span>
+            </div>
           <!-- 播放进度条 -->
             <div class="progress-wrapper">
               <span class="time time-l">{{formatTime(currentTime)}}</span>
@@ -110,6 +124,7 @@ import useMode from './use-mode'
 import useFavorite from './use-favorite'
 import useCD from './use-cd'
 import useLyric from './use-lyric'
+import useMiddleInteractive from './use-middle-interactive'
 import ProgressBar from './progress-bar.vue'
 import Scroll from '@/components/base/scroll/scroll.vue'
 import {formatTime} from '@/assets/js/util'
@@ -142,7 +157,8 @@ export default {
         const {modeIcon,changeMode} = useMode()//播放顺序按钮 和点击效果 的钩子,
         const {getFavoriteIcon,toggleFavorite} = useFavorite()//喜欢按钮的点击效果和 加入喜欢列表的钩子
         const {cdRef,cdImageRef,cdCls} = useCD()//旋转效果的开始暂停
-        const {currentLyric,currentLineNum,playLyric,lyricScrollRef,lyricListRef} = useLyric({songReady,currentTime})//获取歌词数据
+        const {currentLyric,currentLineNum,playLyric,lyricScrollRef,lyricListRef,stopLyric,pureMusicLyric,playingLyric} = useLyric({songReady,currentTime})//获取歌词数据
+        const {currentShow,middleLStyle,middleRStyle,onMiddleTouchStart,onMiddleTouchMove,onMiddleTouchEnd} = useMiddleInteractive()//cd页面和歌词页面的切换效果
       
 
 
@@ -180,7 +196,14 @@ export default {
               return
             }
             const audioEl = audioRef.value
-            newPlaying ? audioEl.play() : audioEl.pause()
+            if(newPlaying){
+              audioEl.play()//歌曲播放开
+              playLyric()//歌词滚动开
+            }else{
+              audioEl.pause()//歌曲播放关
+              stopLyric()//歌词滚动关
+            }
+            // newPlaying ? audioEl.play() : audioEl.pause()
         })
 
 
@@ -275,6 +298,8 @@ export default {
         function onProgressChanging(progress){//拖动进度条的时候修改currentTime的值
           progressChenging = true
           currentTime.value = currentSong.value.duration * progress
+          playLyric()//歌词随进度条同步到响应的位置
+          stopLyric()//在定在这里
         }
 
         function onProgressChanged(progress){//拖动完 真实的修改播放时间
@@ -283,7 +308,7 @@ export default {
           if(!playing.value){//拖动完之后如果歌曲是暂停的改为播放
             store.commit('setPlayingState',true)
           }
-
+          playLyric()//拖动好了 歌词随进度条同步到响应的位置
         }
 
         function end(){//当歌曲播放完毕，根据播放列表播放下一首
@@ -338,7 +363,16 @@ export default {
             currentLyric,
             currentLineNum,
             lyricScrollRef,
-            lyricListRef
+            lyricListRef,
+            pureMusicLyric,
+            playingLyric,
+              //两个页面的切换效果
+            currentShow,
+            middleLStyle,
+            middleRStyle,
+            onMiddleTouchStart,
+            onMiddleTouchMove,
+            onMiddleTouchEnd
         }
     }
     
@@ -410,8 +444,8 @@ export default {
         white-space: nowrap;
         font-size: 0;
         .middle-l {
-          // display: inline-block;
-          display:none;
+          display: inline-block;
+          // display:none;
           vertical-align: top;
           position: relative;
           width: 100%;
