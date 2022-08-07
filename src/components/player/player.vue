@@ -1,6 +1,11 @@
 <template>
-<div class="player">
-    <div class="normal-player" v-show="fullScreen">
+<div class="player" v-show="playlist.length">
+    <transition name="normal" 
+      @enter = "enter" 
+      @after-enter = "afterEnter"
+      @leave = "leave"
+      @after-leave = "afterLeave">
+      <div class="normal-player" v-show="fullScreen">
       <!-- 背景图片 -->
         <div class="background">
             <img :src="currentSong.pic">
@@ -27,6 +32,7 @@
           >
             <div
               class="cd-wrapper"
+              ref="cdWrapperRef"
             >
               <div
                 class="cd"
@@ -78,6 +84,7 @@
               <span class="time time-l">{{formatTime(currentTime)}}</span>
               <div class="progress-bar-wrapper">
                 <progress-bar 
+                ref="barRef"
                 :progress="progress" 
                 @progress-changing="onProgressChanging"
                 @progress-changed="onProgressChanged"
@@ -105,27 +112,31 @@
                 </div>
             </div>
         </div>
-        <audio ref="audioRef" 
-          @pause="pause"
-          @canplay="ready" 
-          @error="error" 
-          @timeupdate="updateTime"
-          @ended="end"
-        >
-        </audio>
-    </div>
+      </div>
+    </transition>
+    <mini-player :progress="progress" :toggle-play="togglePlay"></mini-player>
+    <audio ref="audioRef" 
+      @pause="pause"
+      @canplay="ready" 
+      @error="error" 
+      @timeupdate="updateTime"
+      @ended="end"
+    >
+    </audio>
 </div>
 </template>
 
 <script>
 import { useStore } from 'vuex'
-import { computed ,watch ,ref} from 'vue'
+import { computed ,watch ,ref,nextTick} from 'vue'
 import useMode from './use-mode'
 import useFavorite from './use-favorite'
 import useCD from './use-cd'
 import useLyric from './use-lyric'
 import useMiddleInteractive from './use-middle-interactive'
+import useAnimation from './use-animation'
 import ProgressBar from './progress-bar.vue'
+import MiniPlayer from './mini-player.vue'
 import Scroll from '@/components/base/scroll/scroll.vue'
 import {formatTime} from '@/assets/js/util'
 import { PLAY_MODE } from '@/assets/js/constant'
@@ -136,10 +147,12 @@ export default {
     name:'player',
     components:{
       ProgressBar,
+      MiniPlayer,
       Scroll
     },
     setup(){
         const audioRef = ref(null)
+        const barRef = ref(null)
         // 定义的数据
         const songReady = ref(false)//一开始歌曲是没有准备好的
         const currentTime = ref(0)//歌曲的当前播放时长
@@ -159,6 +172,7 @@ export default {
         const {cdRef,cdImageRef,cdCls} = useCD()//旋转效果的开始暂停
         const {currentLyric,currentLineNum,playLyric,lyricScrollRef,lyricListRef,stopLyric,pureMusicLyric,playingLyric} = useLyric({songReady,currentTime})//获取歌词数据
         const {currentShow,middleLStyle,middleRStyle,onMiddleTouchStart,onMiddleTouchMove,onMiddleTouchEnd} = useMiddleInteractive()//cd页面和歌词页面的切换效果
+        const {cdWrapperRef,enter,afterEnter,leave,afterLeave} = useAnimation()
       
 
 
@@ -205,7 +219,12 @@ export default {
             }
             // newPlaying ? audioEl.play() : audioEl.pause()
         })
-
+        watch(fullScreen,async (newFullScreen)=>{
+          if(newFullScreen){//拿到这个组件，就可以调用组件上的method，等dom变化后才能拿到
+            await nextTick()
+            barRef.value.setOffset(progress.value)
+          }
+        })
 
         // methods
         function goBack(){//歌曲播放视图缩小
@@ -325,11 +344,13 @@ export default {
         return {
             // ref
             audioRef,
+            barRef,
             // 定义的数据
             currentTime,
             // vuex中获取的数据
             fullScreen,
             currentSong,
+            playlist,
             // computed
             playIcon,
             disableCls,
@@ -372,7 +393,13 @@ export default {
             middleRStyle,
             onMiddleTouchStart,
             onMiddleTouchMove,
-            onMiddleTouchEnd
+            onMiddleTouchEnd,
+              // 大小cd的切换效果
+            cdWrapperRef,
+            enter,
+            afterEnter,
+            leave,
+            afterLeave
         }
     }
     

@@ -46,8 +46,9 @@ export default {
     emits:['progress-changing','progress-changed'],
     watch:{
         progress(newProgress){//监听歌曲播放进度，设置进度条的偏移量
-            const barWidth = this.$el.clientWidth - progressBtnWidth//进度条的宽度
-            this.offset = barWidth *  newProgress
+            // const barWidth = this.$el.clientWidth - progressBtnWidth//进度条的宽度
+            // this.offset = barWidth *  newProgress
+            this.setOffset(newProgress)
         }
     },
     created(){
@@ -81,6 +82,10 @@ export default {
         const barWidth = this.$el.clientWidth - progressBtnWidth//进度条的宽度
         const progress = offsetWidth / barWidth
         this.$emit('progress-changed',progress)
+      },
+      setOffset(progress){//解决bug mini暂停之后在回到大屏，播放条位置bug，在进入大屏的时候重新渲染，因为mini大屏不显示
+        const barWidth = this.$el.clientWidth - progressBtnWidth//进度条的宽度
+        this.offset = barWidth * progress
       }
     }
 }

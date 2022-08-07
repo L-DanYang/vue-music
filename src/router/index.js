@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 import Recommend from '@/views/recommend'
+  import Album from '@/views/album'
 import Search from '@/views/search'
 import Singer from '@/views/singer'
   import SingerDetail from '@/views/singer-detail'
@@ -14,7 +15,13 @@ const routes = [
   },
   {
     path:'/recommend',
-    component:Recommend
+    component:Recommend,
+    children:[
+      {
+        path:':id',
+        component:Album
+      }
+    ]
   },
   {
     path:'/singer',
